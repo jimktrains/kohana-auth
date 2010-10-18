@@ -68,6 +68,9 @@ abstract class Kohana_Auth {
 		// Save the config in the object
 		$this->_config = $config;
 
+		if(array_key_exists('session_profile', $this->_config)){
+			$this->_config['session_profile'] = 'default';
+		}
 		$this->_session = Session::instance($this->_config['session_profile']);
 
 		$this->_enc = Encrypt::instance($this->_config['encrypt_profile']);		
