@@ -9,6 +9,111 @@
  */
 class Kohana_Auth_ORM extends Auth {
 
+
+	protected $_enc;
+
+	public function __construct($config = array())
+	{
+		$this->_config = $config;
+		$this->_session = Session::instance($this->_config['session_profile']);
+
+		$this->_enc = Encrypt::instance($this->_config['encrypt_profile']);		
+		if($this->_session->get('plain_text_password')){
+			$this->_enc->set_key($this->_session->get('plain_text_password'));
+		}
+	}
+
+	public function hash_password($password, $salt = FALSE)
+	{
+		$hash = $this->hash($password);
+		return $hash;
+	}
+
+	public function hash($str)
+	{
+		return $this->_enc->hash($str);
+	}	
+	
+	
+	public function login($username, $password, $remember = FALSE)
+	{
+		if (empty($password))
+			return FALSE;
+			
+		return $this->_login($username, $password, $remember);
+	}
+	
+	protected function _login($user, $password, $remember)
+	{
+		if ( ! is_object($user))
+		{
+			$username = $user;
+
+			// Load the user
+			$user = ORM::factory('user');
+			$user->where($user->unique_key($username), '=', $username)->find();
+		}
+
+		// If the passwords match, perform a login
+		// if ($user->has('roles', ORM::factory('role', array('name' => 'login'))) AND 
+		// 	$this->_enc->compare_hash($password, $user->password)
+		// )
+		if($this->_enc->compare_hash($password, $user->password))
+		{
+			if ($remember === TRUE)
+			{
+				// Create a new autologin token
+				$token = ORM::factory('user_token');
+
+				// Set token data
+				$token->user_id = $user->id;
+				$token->expires = time() + $this->_config['lifetime'];
+				$token->save();
+
+				// Set the autologin cookie
+				Cookie::set('authautologin', $token->token, $this->_config['lifetime']);
+			}
+
+			// Finish the login
+			$this->complete_login($user);
+
+			return TRUE;
+		}
+
+		// Login failed
+		return FALSE;
+	}
+	
+
+	/**
+	 * Gets the currently logged in user from the session.
+	 * Returns FALSE if no user is currently logged in.
+	 *
+	 * @return  mixed
+	 */
+	public function get_user()
+	{
+		$user = $this->_session->get($this->_config['session_key'], FALSE);
+		if(false!==$user)
+		{
+			$user = ORM::factory('User', $user);
+		}else{
+			$user = $this->auto_login();
+		}
+		return $user;
+	}
+	
+	protected function complete_login($user)
+	{
+		$user->complete_login();
+		// Regenerate session_id
+		$this->_session->regenerate();
+
+		// Store username in session
+		$this->_session->set($this->_config['session_key'], $user->pk());
+
+		return TRUE;
+	}
 	/**
 	 * Checks if a session is active.
 	 *
@@ -67,51 +172,7 @@ class Kohana_Auth_ORM extends Auth {
 		return $status;
 	}
 
-	/**
-	 * Logs a user in.
-	 *
-	 * @param   string   username
-	 * @param   string   password
-	 * @param   boolean  enable autologin
-	 * @return  boolean
-	 */
-	protected function _login($user, $password, $remember)
-	{
-		if ( ! is_object($user))
-		{
-			$username = $user;
 
-			// Load the user
-			$user = ORM::factory('user');
-			$user->where($user->unique_key($username), '=', $username)->find();
-		}
-
-		// If the passwords match, perform a login
-		if ($user->has('roles', ORM::factory('role', array('name' => 'login'))) AND $user->password === $password)
-		{
-			if ($remember === TRUE)
-			{
-				// Create a new autologin token
-				$token = ORM::factory('user_token');
-
-				// Set token data
-				$token->user_id = $user->id;
-				$token->expires = time() + $this->_config['lifetime'];
-				$token->save();
-
-				// Set the autologin cookie
-				Cookie::set('authautologin', $token->token, $this->_config['lifetime']);
-			}
-
-			// Finish the login
-			$this->complete_login($user);
-
-			return TRUE;
-		}
-
-		// Login failed
-		return FALSE;
-	}
 
 	/**
 	 * Forces a user to be logged in, without specifying a password.
@@ -178,24 +239,6 @@ class Kohana_Auth_ORM extends Auth {
 		return FALSE;
 	}
 
-	/**
-	 * Gets the currently logged in user from the session (with auto_login check).
-	 * Returns FALSE if no user is currently logged in.
-	 *
-	 * @return  mixed
-	 */
-	public function get_user()
-	{
-		$user = parent::get_user();
-
-		if ($user === FALSE)
-		{
-			// check for "remembered" login
-			$user = $this->auto_login();
-		}
-
-		return $user;
-	}
 
 	/**
 	 * Log a user out and remove any autologin cookies.
@@ -250,19 +293,6 @@ class Kohana_Auth_ORM extends Auth {
 		return $user->password;
 	}
 
-	/**
-	 * Complete the login for a user by incrementing the logins and setting
-	 * session data: user_id, username, roles.
-	 *
-	 * @param   object  user ORM object
-	 * @return  void
-	 */
-	protected function complete_login($user)
-	{
-		$user->complete_login();
-
-		return parent::complete_login($user);
-	}
 
 	/**
 	 * Compare password with original (hashed). Works for current (logged in) user
@@ -280,7 +310,7 @@ class Kohana_Auth_ORM extends Auth {
 			return FALSE;
 		}
 
-		$hash = $this->hash_password($password, $this->find_salt($user->password));
+		$hash = $this->hash_password($password);
 
 		return $hash == $user->password;
 	}
