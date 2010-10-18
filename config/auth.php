@@ -15,6 +15,9 @@ return array(
 	
 	'hash_method' => 'blowfish',
 	'iteration_count'=>'15',
-	'encrypt_profile'=>'password'
+	'encrypt_profile'=>'password',
+	'default' =>array(
+		'session_profile' => 'native'
+	)
 
 );

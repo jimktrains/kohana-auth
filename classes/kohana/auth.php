@@ -69,7 +69,7 @@ abstract class Kohana_Auth {
 		$this->_config = $config;
 
 		if(!array_key_exists('session_profile', $this->_config)){
-			$this->_config['session_profile'] = 'default';
+			$this->_config['session_profile'] = Kohana::config('auth.default.session_profile');
 		}
 		$this->_session = Session::instance($this->_config['session_profile']);
 
