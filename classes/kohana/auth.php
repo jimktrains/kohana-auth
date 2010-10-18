@@ -54,6 +54,7 @@ abstract class Kohana_Auth {
 
 	protected $_config;
 
+	protected $_enc;
 	/**
 	 * Loads Session and configuration options.
 	 *
@@ -67,7 +68,13 @@ abstract class Kohana_Auth {
 		// Save the config in the object
 		$this->_config = $config;
 
-		$this->_session = Session::instance();
+		$this->_session = Session::instance($this->_config['session_profile']);
+
+		$this->_enc = Encrypt::instance($this->_config['encrypt_profile']);		
+		if($this->_session->get('plain_text_password')){
+			$this->_enc->set_key($this->_session->get('plain_text_password'));
+		}
+
 	}
 
 	abstract protected function _login($username, $password, $remember);

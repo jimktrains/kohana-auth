@@ -9,20 +9,6 @@
  */
 class Kohana_Auth_ORM extends Auth {
 
-
-	protected $_enc;
-
-	public function __construct($config = array())
-	{
-		$this->_config = $config;
-		$this->_session = Session::instance($this->_config['session_profile']);
-
-		$this->_enc = Encrypt::instance($this->_config['encrypt_profile']);		
-		if($this->_session->get('plain_text_password')){
-			$this->_enc->set_key($this->_session->get('plain_text_password'));
-		}
-	}
-
 	public function hash_password($password, $salt = FALSE)
 	{
 		$hash = $this->hash($password);
