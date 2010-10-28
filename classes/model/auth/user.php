@@ -22,7 +22,7 @@ class Model_Auth_User extends ORM {
 			'min_length' => array(4),
 			'max_length' => array(32),
 			'regex'      => array('/^[-\pL\pN_.]++$/uD'),
-			'Model_Auth_User::unique_username' => NULL
+			array('Model_Auth_User', 'unique_username') => NULL
 		),
 		'password' => array(
 			'not_empty'  => NULL,
@@ -37,7 +37,7 @@ class Model_Auth_User extends ORM {
 			'min_length' => array(4),
 			'max_length' => array(127),
 			'email'      => NULL,
-			'Model_Auth_User::unique_username' => NULL
+			array('Model_Auth_User','unique_username') => NULL
 		),
 	);
 
