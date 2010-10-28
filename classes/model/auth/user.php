@@ -22,6 +22,7 @@ class Model_Auth_User extends ORM {
 			'min_length' => array(4),
 			'max_length' => array(32),
 			'regex'      => array('/^[-\pL\pN_.]++$/uD'),
+			'Model_Auth_User::unique_username' => NULL
 		),
 		'password' => array(
 			'not_empty'  => NULL,
@@ -36,6 +37,7 @@ class Model_Auth_User extends ORM {
 			'min_length' => array(4),
 			'max_length' => array(127),
 			'email'      => NULL,
+			'Model_Auth_User::unique_username' => NULL
 		),
 	);
 
@@ -239,6 +241,27 @@ class Model_Auth_User extends ORM {
 		}
 
 		return parent::save();
+	}
+	
+	public static function unique_username($username)
+	{
+	    return Model_Auth_User::unique('username', $username);
+	}
+	
+	public static function unique_email($email)
+	{
+	    return Model_Auth_User::unique('email', $email);
+	}
+
+	public static function unique($field, $value)
+	{
+	    var_dump($field);
+		var_dump($value);
+	    return ! DB::select(array(DB::expr("COUNT($field)"), 'total'))
+	        ->from('users')
+	        ->where($field, '=', $value)
+	        ->execute()
+	        ->get('total');
 	}
 
 } // End Auth User Model
