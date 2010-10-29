@@ -44,7 +44,6 @@ class Kohana_Auth_ORM extends Auth {
 		// if ($user->has('roles', ORM::factory('role', array('name' => 'login'))) AND 
 		// 	$this->_enc->compare_hash($password, $user->password)
 		// )
-		error_log(var_export($password, true));
 		if($this->_enc->compare_hash($password, $user->password))
 		{
 			if ($remember === TRUE)
