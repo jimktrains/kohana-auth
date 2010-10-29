@@ -255,8 +255,9 @@ class Model_Auth_User extends ORM {
 
 	public static function unique($field, $value)
 	{
-	    var_dump($field);
-		var_dump($value);
+		error_log('unique' . $field);
+	    error_log(var_export($field, true));
+		error_log(var_export($value, true));
 	    return ! DB::select(array(DB::expr("COUNT($field)"), 'total'))
 	        ->from('users')
 	        ->where($field, '=', $value)
