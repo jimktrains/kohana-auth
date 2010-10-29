@@ -22,7 +22,7 @@ class Model_Auth_User extends ORM {
 			'min_length' => array(4),
 			'max_length' => array(32),
 			'regex'      => array('/^[-\pL\pN_.]++$/uD'),
-			array('Model_Auth_User', 'unique_username') => NULL
+			'Model_Auth_User::unique_username' => NULL
 		),
 		'password' => array(
 			'not_empty'  => NULL,
@@ -37,7 +37,7 @@ class Model_Auth_User extends ORM {
 			'min_length' => array(4),
 			'max_length' => array(127),
 			'email'      => NULL,
-			array('Model_Auth_User','unique_username') => NULL
+			'Model_Auth_User::unique_username' => NULL
 		),
 	);
 
@@ -264,4 +264,4 @@ class Model_Auth_User extends ORM {
 	        ->get('total');
 	}
 
-} // End Auth User Model
+} // End Auth User Modely
