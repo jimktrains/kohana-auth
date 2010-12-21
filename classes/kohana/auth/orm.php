@@ -29,7 +29,7 @@ class Kohana_Auth_ORM extends Auth {
 		return $this->_login($username, $password, $remember);
 	}
 	
-	protected function _login($user, $password, $remember)
+	protected function _login($email, $password, $remember)
 	{
 		if ( ! is_object($user))
 		{
@@ -37,14 +37,14 @@ class Kohana_Auth_ORM extends Auth {
 
 			// Load the user
 			$user = ORM::factory('user');
-			$user->where($user->unique_key($username), '=', $username)->find();
+			$user->where('email', '=', $email)->find();
 		}
 
 		// If the passwords match, perform a login
 		// if ($user->has('roles', ORM::factory('role', array('name' => 'login'))) AND 
 		// 	$this->_enc->compare_hash($password, $user->password)
 		// )
-		if($this->_enc->compare_hash($password, $user->password))
+		if($this->_enc->compare_hash($password, $user->password_hash))
 		{
 			if ($remember === TRUE)
 			{
@@ -269,14 +269,10 @@ class Kohana_Auth_ORM extends Auth {
 	{
 		if ( ! is_object($user))
 		{
-			$username = $user;
-
-			// Load the user
-			$user = ORM::factory('user');
-			$user->where($user->unique_key($username), '=', $username)->find();
+			$user = ORM::factory('user', $user);
 		}
 
-		return $user->password;
+		return $user->password_hash;
 	}
 
 
@@ -298,7 +294,7 @@ class Kohana_Auth_ORM extends Auth {
 
 		$hash = $this->hash_password($password);
 
-		return $hash == $user->password;
+		return $hash == $user->password_hash;
 	}
 
 } // End Auth ORM

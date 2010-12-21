@@ -237,7 +237,7 @@ class Model_Auth_User extends ORM {
 	{
 		if (array_key_exists('password', $this->_changed))
 		{
-			$this->_object['password'] = Auth::instance()->hash_password($this->_object['password']);
+			$this->_object['password_hash'] = Auth::instance()->hash_password($this->_object['password']);
 		}
 
 		return parent::save();
